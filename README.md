@@ -8,6 +8,9 @@ We present a new method for correcting the bias in traditional photometric stere
 (2) We then propose the ring-light photometric stereo compensation method, that uses sparse known 3D points to fit and correct the height deviation for a more accurate 3D heights of the target.
 
 Function information:
+
 (1) 'PS_test6.m' is our main function.
+
 (2) 'PhotometricStereo.m' computes the normal by the traditional photometric stereo method.
+
 (3) 'poisson_solver_function_neumann.m' integrates the gradients to heights.
