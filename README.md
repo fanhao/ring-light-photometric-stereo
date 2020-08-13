@@ -14,3 +14,9 @@ Function information:
 (2) 'PhotometricStereo.m' computes the normal by the traditional photometric stereo method.
 
 (3) 'poisson_solver_function_neumann.m' integrates the gradients to heights.
+
+Reference:
+
+(1) Light Attenuation Model: https://docs.blender.org/manual/en/2.79/render/blender_render/lighting/lights/attenuation.html
+
+(2) Paper&Code: What is the range of surface reconstructions from a gradient field?
