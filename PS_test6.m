@@ -1,30 +1,35 @@
-%6¶Ô³Æ¹âÕÕ·½Ïò£¬¼ÙÉè·½ÏòÆ½ĞĞ£¬Ö»ÓĞ¾àÀëË¥¼õ-ÄæÆ½·½
-clear; close all; clc;
-addpath(genpath(pwd));  % Ìí¼Óµ±Ç°Â·¾¶ÏÂµÄËùÓĞ×ÓÄ¿Â¼
+%   Title: A new ring-light photometric stereo compensation method
+%
+%   Author: Hao Fan.
+%   Created: March 25, 2020.
 
+clear; close all; clc;
+addpath(genpath(pwd));
+%% ring-light photometric stereo with 6 lights following Quadratic attenuation
+% 6å¯¹ç§°å…‰ç…§æ–¹å‘ï¼Œé€†å¹³æ–¹è·ç¦»è¡°å‡
 g_pic_num = 6;
 shadowThresh = 0.01;
 
-%% ¹âÕÕ·½Ïò
+%% main light direction (å…‰ç…§æ–¹å‘)
 L = zeros(3, g_pic_num);
 Slant = 45;
 Slant_sin = sin(Slant/180*pi);
 Slant_cos = cos(Slant/180*pi);
 for i = 1:g_pic_num
     Tilt = (i-1) * 360/g_pic_num;
-    %%±¾ÊµÑéµÄ×ø±êÏµ
+
     L(1,i) = Slant_sin * cos(Tilt/180*pi);
     L(2,i) = Slant_sin * sin(Tilt/180*pi);
     L(3,i) = Slant_cos;
 end
 
-%% Í¼Ïñ·ÂÕæ,·ÂÕæÒ»¸öÆ½Ãæ£¬·¨Ïò£¨0£¬0£¬1£©
+%% Simulation for a flat plane. normal=(0,0,1) (å›¾åƒä»¿çœŸ,ä»¿çœŸä¸€ä¸ªå¹³é¢)
 w1 = 600; h1 = 600;
 [X,Y]= meshgrid(1:w1, 1:h1);
 
 scale = 3; %6-5,3-10,2-15,1.5-20
-x = (X - 300)/scale; %+-15³¤
-y = (Y - 300)/scale; %+-15¿í
+x = (X - 300)/scale; %+-15 length(é•¿)
+y = (Y - 300)/scale; %+-15 width(å®½)
 
 r = 400; h = 400;
 d1 = sqrt( (x - r).^2 + y.^2 + h^2 );
@@ -51,7 +56,7 @@ I6 = I0./(d6.^para_attenuation);
 % I5 = I0.* exp(-0.1*d5)./ ((d5).^3);
 % I6 = I0.* exp(-0.1*d6)./ ((d6).^3);
 
-% ÏÔÊ¾£¬µ÷Õûµ½[0 255]
+% Adjust the imaging value in [0 255] (å›¾åƒäº®åº¦è°ƒæ•´åˆ°[0 255])
 max_I = max([prctile(I1(:), 99),prctile(I2(:), 99),prctile(I3(:), 99),prctile(I4(:), 99),prctile(I5(:), 99),prctile(I6(:), 99)]);
 I1 = I1/max_I * 255;
 I2 = I2/max_I * 255;
@@ -59,10 +64,10 @@ I3 = I3/max_I * 255;
 I4 = I4/max_I * 255;
 I5 = I5/max_I * 255;
 I6 = I6/max_I * 255;
-figure; subplot(2,3,1); imshow(uint8(I1)); title('0¡ã'); subplot(2,3,2); imshow(uint8(I2)); title('60¡ã'); subplot(2,3,3); imshow(uint8(I3)); title('120¡ã');
-subplot(2,3,4); imshow(uint8(I4)); title('180¡ã'); subplot(2,3,5); imshow(uint8(I5)); title('240¡ã'); subplot(2,3,6); imshow(uint8(I6)); title('300¡ã');
+figure; subplot(2,3,1); imshow(uint8(I1)); title('0Â°'); subplot(2,3,2); imshow(uint8(I2)); title('60Â°'); subplot(2,3,3); imshow(uint8(I3)); title('120Â°');
+subplot(2,3,4); imshow(uint8(I4)); title('180Â°'); subplot(2,3,5); imshow(uint8(I5)); title('240Â°'); subplot(2,3,6); imshow(uint8(I6)); title('300Â°');
 
-%% ¶ÁÈëÍ¼Æ¬
+%% Read images (è¯»å…¥å›¾ç‰‡)
 [M, N, C] = size(I1);
 I = ones(M, N, g_pic_num);
 I(:,:,1) = I1;
@@ -71,25 +76,25 @@ I(:,:,3) = I3;
 I(:,:,4) = I4;
 I(:,:,5) = I5;
 I(:,:,6) = I6;
-%6¸ö¶Ô³Æ£¬5¸ö²»¶Ô³Æ
+%6ä¸ªå¯¹ç§°ï¼Œ5ä¸ªä¸å¯¹ç§°
 g_pic_num_2 = 6;
 I_new = I;
 L_new = L;
 
-% % 4¸ö¶Ô³Æ, 3¸ö²»¶Ô³Æ
+% % 4ä¸ªå¯¹ç§°, 3ä¸ªä¸å¯¹ç§°
 % g_pic_num_2 = 3;
 % I_new = ones(M, N, g_pic_num_2);
 % I_new(:,:,1) = I1;
 % I_new(:,:,2) = I3;
 % I_new(:,:,3) = I5;
-% % I_new(:,:,4) = I4;
+% % % I_new(:,:,4) = I4;
 % L_new = zeros(3, g_pic_num_2);
 % L_new(:,1) = L(:,1);
 % L_new(:,2) = L(:,3);
 % L_new(:,3) = L(:,5);
-% % L_new(:,4) = L(:,4);
+% % % L_new(:,4) = L(:,4);
 
-%% Í¼ÏñµÄ³ß¶ÈĞÅÏ¢
+%% Size of the image (å›¾åƒçš„å°ºåº¦ä¿¡æ¯)
 [g_rows, g_cols] = size(I1);
 g_length = g_rows * g_cols;
 
@@ -107,53 +112,55 @@ end
 N_RGB(:,:,1)  = (n(:,:,1) + 1) / 2;
 N_RGB(:,:,2)  = (n(:,:,2) + 1) / 2;
 N_RGB(:,:,3)  = n(:,:,3);
-figure; imshow(N_RGB); 
+figure; imshow(N_RGB); title('normal');
 % figure; imshow(rho);
 
 %% Estimate depth map from the normal vectors.
 fprintf('Estimating depth map from normal vectors...\n');
 p = -n(:,:,1) ./ n(:,:,3);
 q = -n(:,:,2) ./ n(:,:,3);
-p(isnan(p)) = 0; %ÅĞ¶ÏÊı×éµÄÔªËØÊÇ·ñÊÇNaN¡£ NaN ¼´ Not a Number µÄËõĞ´¡£
+p(isnan(p)) = 0; 
 q(isnan(q)) = 0;
 
-figure; subplot(1,2,1); mesh(p); title('p'); subplot(1,2,2); mesh(q); title('q');
+figure; subplot(1,2,1); mesh(p); title('Gradient p'); xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('p(pixel)');
+subplot(1,2,2); mesh(q); title('Gradient q'); xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('q(pixel)');
+set(gcf,'unit','centimeters','position',[10 5 13 6]);
 
 %% integration
 Height_poisson =poisson_solver_function_neumann(p, q);
 % Height_poisson = flipud(Height_poisson);
-% figure;mesh(Height_poisson); title('»ı·Ö¸ß¶È(ÏñËØ)')
+% figure;mesh(Height_poisson); title('ç§¯åˆ†é«˜åº¦(åƒç´ )')
 
-%% ½ÃÕı·½·¨
-% ÄâºÏ y - namda * H  = a x.^2 + b y.^2 + c x + d y + f;
-index = floor(randi(length(Height_poisson(:)),500,1));
+%% The propsed method to fit the bias. (æ‹Ÿåˆ y - namda * H  = a x.^2 + b y.^2 + c x + d y + f;)
+index = floor(randi(length(Height_poisson(:)),100,1));
 Height_diff = Height_poisson(index) - 0;
-[y, x] = ind2sub(size(Height_poisson), index); %ind2subµÃµ½µÄÊÇĞĞÁĞ£¬×¢Òâ ĞĞÁĞ Óë xy Ïà·´
+[y, x] = ind2sub(size(Height_poisson), index); %ind2subå¾—åˆ°çš„æ˜¯è¡Œåˆ—ï¼Œæ³¨æ„ è¡Œåˆ— ä¸ xy ç›¸å
 AA = [x.^2, y.^2, x, y, ones(length(x),1)];
 
-% ·½·¨1£º¾ØÕó³ı·¨
+% æ–¹æ³•1ï¼šçŸ©é˜µé™¤æ³•
 para = AA \ Height_diff;
 
-% ¸ù¾İ²ÎÊı¼ÆËãÕæÊµ½á¹û
-[m, n] = size(Height_poisson); %size µÃµ½µÄÊÇĞĞÁĞ
-[xx, yy] = meshgrid(1:n, 1:m);          %×¢ÒâĞĞ¡¢ÁĞ£¬ºÍx£¬yµÄ¶ÔÓ¦¹ØÏµ
+% Compute the corrected height (æ ¹æ®å‚æ•°è®¡ç®—çœŸå®ç»“æœ)
+[m, n] = size(Height_poisson); %size å¾—åˆ°çš„æ˜¯è¡Œåˆ—
+[xx, yy] = meshgrid(1:n, 1:m);          %æ³¨æ„è¡Œã€åˆ—ï¼Œå’Œxï¼Œyçš„å¯¹åº”å…³ç³»
 fitted_height = [xx(:).^2, yy(:).^2, xx(:), yy(:), ones(m*n,1)] * para(:);
 Height_correct = Height_poisson(:) - fitted_height;
 Height_correct = reshape(Height_correct, m, n);
 fitted_height = reshape(fitted_height, m, n);
-figure; mesh(fitted_height); title('Îó²î¸ß¶È(ÏñËØ)')
+figure; mesh(fitted_height); title('Fitted Bias Height(pixel)')
 
-figure; subplot(1,2,1); mesh(Height_poisson); title('Initial Height(pixel)'); subplot(1,2,2); mesh(Height_correct); title('Correct Height(pixel)');
+figure; subplot(1,2,1); mesh(Height_poisson); title('Initial Height'); xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('Initial Height(pixel)'); 
+subplot(1,2,2); mesh(Height_correct); title('Correct Height'); xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('Correct Height(pixel)');
+set(gcf,'unit','centimeters','position',[10 5 13 6]);
 
-% Îó²î·ÖÎö
+% Height Error Analysis
 Height_d = Height_correct - 0;
-% figure; mesh(Height_d); title('Îó²î·ÖÎö(ÏñËØ)');colorbar;% axis equal;
-disp(['Æ½¾ù¸ß¶ÈÎó²î£º' num2str(mean(mean(abs(Height_d)))) 'ÏñËØ']);
+disp(['å¹³å‡é«˜åº¦è¯¯å·®ï¼š' num2str(mean(mean(abs(Height_d)))) 'åƒç´ ']);
 
-figure; mesh(Height_d/scale); title('Îó²î·ÖÎö(ºÁÃ×)');colorbar;
-disp(['Æ½¾ù¸ß¶ÈÎó²î£º' num2str(mean(mean(abs(Height_d/scale)))) 'ºÁÃ×']);
+%figure; mesh(Height_d/scale); title('Height error(mm)');colorbar;
+disp(['å¹³å‡é«˜åº¦è¯¯å·®ï¼š' num2str(mean(mean(abs(Height_d/scale)))) 'æ¯«ç±³']);
 
-% Æ«²î½Ç¶ÈµÄÎó²î·ÖÎö
+% Angle error Analysis (åå·®è§’åº¦çš„è¯¯å·®åˆ†æ)
 [p_correct,q_correct] = gradient(Height_correct);
 bb = sqrt(p_correct.^2 + q_correct.^2 + 1);
 % Ninit(:,:,1) = - p_correct./bb;
@@ -161,7 +168,8 @@ bb = sqrt(p_correct.^2 + q_correct.^2 + 1);
 % Ninit(:,:,3) = 1./bb;
 Height_n_error = acos(1./bb)/pi * 180;
 
-figure; subplot(1,2,1); mesh(Height_d); title('Height error (pixel)');colorbar;
-subplot(1,2,2);mesh(Height_n_error); title('Angle error (degree)'); colorbar;
+figure; subplot(1,2,1); mesh(Height_d); title('Height error'); xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('Height error(pixel)');
+subplot(1,2,2);mesh(Height_n_error); title('Angle error');  xlabel('x(pixel)'); ylabel('y(pixel)'); zlabel('Angle error(pixel)');
+set(gcf,'unit','centimeters','position',[10 5 13 6]);
 
-disp(['Æ½¾ù½Ç¶ÈÎó²î£º' num2str(mean(mean(Height_n_error))) '¶È']);
+disp(['å¹³å‡è§’åº¦è¯¯å·®ï¼š' num2str(mean(mean(Height_n_error))) 'åº¦']);
