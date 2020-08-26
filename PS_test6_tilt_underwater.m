@@ -28,7 +28,7 @@ x = (X - 300)/scale; %+-150 length(长)
 y = (Y - 300)/scale; %+-150 width(宽)
 
 % 斜面
-z_a = 0; z_b = -0.3;
+z_a = 0; z_b = 0;
 z = - z_a*x - z_b*y;
 figure;mesh(z);title('z');
 
@@ -48,7 +48,7 @@ d4 = sqrt( (x + r).^2 + y.^2 + (h-z).^2 );
 d5 = sqrt( (x + r/2).^2 + (y+sqrt(3)*r/2).^2 + (h-z).^2 );
 d6 = sqrt( (x - r/2).^2 + (y+sqrt(3)*r/2).^2 + (h-z).^2 );
 
-I0 = 10000; para_attenuation = 3;
+I0 = 100000; para_attenuation = 3;
 % 斜面的仿真光强 N*L/|L|,由于|N|相同未计算 % 真实尺度
 I1 = I0*(z_a .*(r-x) + z_b.*(-y) + (h-z))./(d1.^para_attenuation);
 I2 = I0*(z_a .*(r/2-x) + z_b.*(sqrt(3)*r/2-y) + (h-z))./(d2.^para_attenuation);
@@ -56,6 +56,16 @@ I3 = I0*(z_a .*(-r/2-x) + z_b.*(sqrt(3)*r/2-y) + (h-z))./(d3.^para_attenuation);
 I4 = I0*(z_a .*(-r-x) + z_b.*(-y) + (h-z))./(d4.^para_attenuation);
 I5 = I0*(z_a .*(-r/2-x) + z_b.*(-sqrt(3)*r/2-y) + (h-z))./(d5.^para_attenuation);
 I6 = I0*(z_a .*(r/2-x) + z_b.*(-sqrt(3)*r/2-y) + (h-z))./(d6.^para_attenuation);
+
+% underwater attentuation
+% 大洋水的光衰减系数约为0.1/米，0.0001/毫米
+c_attenuation = -0.0001;
+I1 = I1.* exp(c_attenuation*d1);
+I2 = I2.* exp(c_attenuation*d2);
+I3 = I3.* exp(c_attenuation*d3);
+I4 = I4.* exp(c_attenuation*d4);
+I5 = I5.* exp(c_attenuation*d5);
+I6 = I6.* exp(c_attenuation*d6);
 
 % 显示，调整到[0 255]
 max_I = max([prctile(I1(:), 99),prctile(I2(:), 99),prctile(I3(:), 99),prctile(I4(:), 99),prctile(I5(:), 99),prctile(I6(:), 99)]);
